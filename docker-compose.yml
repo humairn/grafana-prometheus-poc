@@ -1,0 +1,35 @@
+version: '3.9'
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - '9090:9090'
+    networks:
+      - prometheus-grafana-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  grafana:
+    image: grafana/grafana
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ${PWD}/drone-dashboard.json:/etc/grafana/provisioning/dashboards/drone-dashboard.json
+    networks:
+      - prometheus-grafana-network
+      
+volumes:
+ prometheus-data:
+   driver: bridge
+ grafana-data:
+   driver: bridge
+   
+networks:
+  prometheus-grafana-network:
+    external:false
